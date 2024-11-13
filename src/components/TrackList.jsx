@@ -1,44 +1,23 @@
-import React from 'react';
-
 const TrackList = (props) => {
-  const tracks = props.trackList.map((track) => (
-    <div key={track.id}>
-      <li>
-        <span>{track.title} by {track.artist}</span>
-        
-        {/* Play button: updates the currently playing track */}
-        <button onClick={() => props.updateSelectedTrack(track)}>
-          Play
-        </button>
-
-        {/* Edit button: opens the form for editing the track */}
-        <button onClick={() => props.handleFormView(track)}>
-          Edit
-        </button>
-
-        {/* Delete button: removes the track from the list and the backend */}
-        <button onClick={() => props.handleRemoveTrack(track.id)}>
-          Delete
-        </button>
+    const tracks = props.trackList.map((track) => (
+      <li key={track._id}>
+        {track.title} by {track.artist}
+        <button onClick={() => props.nowPlaying(track)}>Play</button>
+        <button onClick={() => props.handleEditTrack(track)}>Edit</button>
+        <button onClick={() => props.handleRemoveTrack(track._id)}>Delete</button>
       </li>
-    </div>
-  ));
-
-  return (
-    <div>
-      <h2>Track List</h2>
-      <button onClick={props.handleFormView}>
-        {props.isFormOpen ? 'Close Form' : 'Add New Track'}
-      </button>
-      <ul>
-        {!props.trackList.length ? (
-          <h3>No Tracks Yet!</h3>
-        ) : (
-          <ul>{tracks}</ul>
-        )}
-      </ul>
-    </div>
-  );
-};
-
-export default TrackList;
+    ));
+  
+    return (
+      <div>
+        <button onClick={props.handleFormView}>
+          {props.isFormOpen ? 'Close Form' : 'Add New Track'}
+        </button>
+        <h1>Track List</h1>
+        {!props.trackList.length ? <h2>No tracks yet!</h2> : <ul>{tracks}</ul>}
+      </div>
+    );
+  };
+  
+  export default TrackList;
+  

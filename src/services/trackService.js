@@ -1,55 +1,56 @@
-const API_URL = 'http://localhost:5000/tracks';  // Update this to your actual API URL
+const BASE_URL = `${import.meta.env.VITE_BACK_END_SERVER_URL}/tracks`;
 
 export const index = async () => {
   try {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Failed to fetch tracks');
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    return { error: error.message };
+    const res = await fetch(BASE_URL);
+    const tracks = await res.json();
+    return tracks;
+  } catch (err) {
+    console.log(err);
   }
 };
 
 export const create = async (formData) => {
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(formData),
     });
-    if (!response.ok) throw new Error('Failed to create track');
-    return await response.json();
+    const track = await res.json();
+    return track;
   } catch (error) {
-    console.error(error);
-    return { error: error.message };
+    console.log(error);
   }
 };
 
-export const update = async (formData, trackId) => {
+export async function updateTrack(formData, trackId) {
   try {
-    const response = await fetch(`${API_URL}/${trackId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch(`${BASE_URL}/${trackId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(formData),
     });
-    if (!response.ok) throw new Error('Failed to update track');
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    return { error: error.message };
+    return await res.json();
+  } catch (err) {
+    console.log(err);
   }
-};
+}
 
-export const remove = async (trackId) => {
+export async function deleteTrack(trackId) {
   try {
-    const response = await fetch(`${API_URL}/${trackId}`, {
-      method: 'DELETE',
+    const res = await fetch(`${BASE_URL}/${trackId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
-    if (!response.ok) throw new Error('Failed to delete track');
-    return await response.json();
+    return await res.json();
   } catch (error) {
-    console.error(error);
-    return { error: error.message };
+    console.log(error);
   }
-};
+}
