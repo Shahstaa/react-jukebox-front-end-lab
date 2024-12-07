@@ -1,13 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const TrackForm = (props) => {
   const initialState = {
     title: '',
     artist: ''
   };
-
-  // Set initial form data to either empty or selected track data
-  const [formData, setFormData] = useState(props.selected ? props.selected : initialState);
+  const [formData, setFormData] = useState(props.selected ? props.selected : initialState)
 
   const handleChange = (evt) => {
     setFormData({ ...formData, [evt.target.name]: evt.target.value });
@@ -16,18 +14,16 @@ const TrackForm = (props) => {
   const handleSubmitForm = (evt) => {
     evt.preventDefault();
     if (props.selected) {
-      // If editing, update the track
-      props.handleUpdateTrack(formData, props.selected._id);
-    } else {
-      // If creating, add new track
-      props.handleAddTrack(formData);
-    }
+        props.handleUpdateTrack(formData, props.selected._id);
+      } else {
+        props.handleAddTrack(formData);
+      }
   };
 
   return (
     <div>
-      <form onSubmit={handleSubmitForm}>
-        <label htmlFor="title">Track Title</label>
+      <form onSubmit={handleSubmitForm} >
+        <label htmlFor="title"> Track Title </label>
         <input
           id="title"
           name="title"
@@ -35,16 +31,14 @@ const TrackForm = (props) => {
           onChange={handleChange}
           required
         />
-        <label htmlFor="artist">Artist</label>
+        <label htmlFor="artist"> Artist </label>
         <input
           id="artist"
           name="artist"
           value={formData.artist}
           onChange={handleChange}
         />
-        <button type="submit">
-          {props.selected ? 'Update Track' : 'Add New Track'}
-        </button>
+        <button type="submit">{props.selected ? 'Update Track' : 'Add New Track'}</button>
       </form>
     </div>
   );

@@ -1,80 +1,102 @@
+import './App.css'
 import { useState, useEffect } from 'react';
+import * as trackService from './services/trackService';
 import TrackList from './components/TrackList';
-import TrackForm from './components/TrackForm';
 import NowPlaying from './components/NowPlaying';
+import TrackForm from './components/TrackForm';
 
 const App = () => {
   const [trackList, setTrackList] = useState([]);
+  const [selected, setSelected] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedTrack, setSelectedTrack] = useState(null);
 
   useEffect(() => {
-    // Fetch track list when the app loads
     const fetchTracks = async () => {
-      const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/tracks`);
-      const tracks = await response.json();
-      setTrackList(tracks);
+      try {
+        const tracks = await trackService.index();
+        if (tracks.error) {
+          throw new Error(tracks.error);
+        }
+        setTrackList(tracks);
+      } catch (error) {
+        console.log(error);
+      }
     };
     fetchTracks();
   }, []);
 
-  const handleFormView = () => {
+  const nowPlaying = (track) => {
+    setSelected(track);
+  };
+
+  const handleFormView = (selected) => {
+    if (!selected.title) setSelected(null);
     setIsFormOpen(!isFormOpen);
   };
 
-  const handleAddTrack = async (trackData) => {
-    const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/tracks`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(trackData)
-    });
-    const newTrack = await response.json();
-    setTrackList([...trackList, newTrack]);
-    setIsFormOpen(false);
+  const handleAddTrack = async (formData) => {
+    try {
+      const newTrack = await trackService.create(formData);
+  
+      if (newTrack.error) {
+        throw new Error(newTrack.error);
+      }
+  
+      setTrackList([newTrack, ...trackList]);
+      setIsFormOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleUpdateTrack = async (updatedTrackData, trackId) => {
-    const response = await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/tracks/${trackId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updatedTrackData)
-    });
-    const updatedTrack = await response.json();
-    setTrackList(trackList.map(track => track._id === trackId ? updatedTrack : track));
+  const handleUpdateTrack = async (formData, trackId) => {
+    try {
+      const updatedTrack = await trackService.updateTrack(formData, trackId);
+      if (updatedTrack.error) {
+        throw new Error(updatedTrack.error);
+      }
+  
+      const updatedTrackList = trackList.map((track) =>
+        track._id !== updatedTrack._id ? track : updatedTrack
+      );
+      setTrackList(updatedTrackList);
+      setSelected(updatedTrack);
+      setIsFormOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleRemoveTrack = async (trackId) => {
-    await fetch(`${import.meta.env.VITE_BACK_END_SERVER_URL}/tracks/${trackId}`, {
-      method: 'DELETE'
-    });
-    setTrackList(trackList.filter(track => track._id !== trackId));
-    setSelectedTrack(null); // Clear the now playing track if deleted
-  };
+    try {
+      const deletedTrack = await trackService.deleteTrack(trackId);
 
-  const nowPlaying = (track) => {
-    setSelectedTrack(track);
+      if (deletedTrack.error) {
+        throw new Error(deletedTrack.error);
+      }
+
+      setTrackList(trackList.filter((track) => track._id !== deletedTrack._id));
+      setSelected(null);
+      setIsFormOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <div>
-      <h1>Reactville Jukebox</h1>
-      <TrackList
-        trackList={trackList}
-        nowPlaying={nowPlaying}
-        handleFormView={handleFormView}
-        isFormOpen={isFormOpen}
-        handleRemoveTrack={handleRemoveTrack}
-        handleEditTrack={(track) => setSelectedTrack(track)}
-      />
-      {isFormOpen && (
-        <TrackForm
-          handleAddTrack={handleAddTrack}
-          handleUpdateTrack={handleUpdateTrack}
-          selected={selectedTrack}
-        />
-      )}
-      <NowPlaying selected={selectedTrack} handleFormView={handleFormView} handleRemoveTrack={handleRemoveTrack} />
-    </div>
+    <>
+    <TrackList 
+    trackList={trackList} 
+    nowPlaying={nowPlaying} 
+    handleFormView={handleFormView}  
+    isFormOpen={isFormOpen} 
+    />
+    {isFormOpen ? (
+      <TrackForm handleAddTrack={handleAddTrack} selected={selected} handleUpdateTrack={handleUpdateTrack}/>
+    ) : (
+      <NowPlaying selected={selected} handleFormView={handleFormView} handleRemoveTrack={handleRemoveTrack} />
+    )}
+    </>
   );
 };
 
